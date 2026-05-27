@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">QuizMaster</string>
+    <string name="categories_load_failed">Failed to load categories: %s</string>
+    <string name="login_title">QuizMaster</string>
+    <string name="university_name">St. Mary\'s University</string>
+    <string name="email_hint">Email address</string>
+    <string name="password_hint">Password</string>
+    <string name="sign_in">Sign in</string>
+    <string name="create_account">Create account</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="admin_login_link">Admin? Login here →</string>
+    <string name="continue_with_google">Continue with Google</string>
+    <string name="default_web_client_id" translatable="false">70620124041-t3r66fdgi2d1lbmr6vsg8viejpcndknj.apps.googleusercontent.com</string>
+    <string name="cloud_sync_active">Cloud Sync Active</string>
+    <string name="local_mode">Local Mode</string>
+
+
+
+
+    <!-- Fragments -->
+    <string name="title_home">Home</string>
+    <string name="title_progress">Progress</string>
+    <string name="title_ranks">Ranks</string>
+    <string name="title_favs">Favs</string>
+    <string name="title_profile">Profile</string>
+</resources>

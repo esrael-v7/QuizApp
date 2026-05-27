@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#1565C0</color>
+    <color name="colorPrimaryDark">#0D47A1</color>
+    <color name="colorPrimaryLight">#E3F2FD</color>
+    <color name="colorAccent">#2E7D32</color>
+    <color name="colorError">#B71C1C</color>
+    <color name="colorAmber">#E65100</color>
+    <color name="colorPurple">#534AB7</color>
+    <color name="colorTeal">#0F6E56</color>
+    <color name="colorDarkAmber">#854F0B</color>
+    <color name="colorBackground">#FAFAFA</color>
+    <color name="colorSurface">#FFFFFF</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+    <color name="colorSuccess">#2E7D32</color>
+    <color name="colorSuccessLight">#E8F5E9</color>
+    <color name="colorSuccessDark">#1B5E20</color>
+    <color name="colorErrorLight">#FFEBEE</color>
+    <color name="colorErrorDark">#7F0000</color>
+    <color name="colorAmberLight">#FFF3E0</color>
+    <color name="colorPurpleLight">#EDE7F6</color>
+    <color name="colorPurpleDark">#3C3489</color>
+    <color name="colorTealLight">#E0F2F1</color>
+    <color name="colorAdmin">#B71C1C</color>
+
+    <!-- UI Semantic colors -->
+    <color name="colorAppBar">#1565C0</color>
+    <color name="colorCardBorder">#CCCCCC</color>
+    <color name="colorPrimaryText">#212121</color>
+    <color name="colorSecondaryText">#888888</color>
+    <color name="colorMyRankChipBg">#E3F2FD</color>
+    <color name="colorDivider">#E0E0E0</color>
+    <color name="colorStatCardBg">#F5F5F5</color>
+    <color name="colorInputBg">#FFFFFF</color>
+    <color name="colorShimmerBase">#F5F5F5</color>
+    <color name="colorShimmerHighlight">#EEEEEE</color>
+    <color name="colorOptionBg">#FFFFFF</color>
+    <color name="colorOptionCorrectBg">#E8F5E9</color>
+    <color name="colorOptionWrongBg">#FFEBEE</color>
+    <color name="colorOptionCorrectStroke">#2E7D32</color>
+    <color name="colorOptionWrongStroke">#B71C1C</color>
+    <color name="colorExplanationBg">#E8F5E9</color>
+
+    <!-- Standard colors -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

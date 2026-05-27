@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#64B5F6</color>
+    <color name="colorBackground">#1A1A2E</color>
+    <color name="colorSurface">#0D1117</color>
+    <color name="colorPrimaryDark">#1A1A2E</color>
+    <color name="colorPrimaryLight">#0F172A</color>
+
+    <!-- From B2 section -->
+    <color name="colorAppBar">#0D1117</color>
+    <color name="colorCardBorder">#334155</color>
+    <color name="colorPrimaryText">#E2E8F0</color>
+    <color name="colorSecondaryText">#94A3B8</color>
+    <color name="colorMyRankChipBg">#0F172A</color>
+    <color name="colorOptionBg">#1E293B</color>
+    <color name="colorOptionCorrectBg">#1B5E20</color>
+    <color name="colorOptionWrongBg">#7F1D1D</color>
+    <color name="colorOptionCorrectStroke">#4ADE80</color>
+    <color name="colorOptionWrongStroke">#F87171</color>
+    <color name="colorExplanationBg">#102A12</color>
+
+    <!-- We should also override other colors if they need changes in dark mode,
+         but the spec mostly focuses on these. -->
+</resources>
