@@ -12,6 +12,12 @@ public interface QuestionDao {
     @Query("SELECT * FROM questions WHERE categoryId = :catId ORDER BY RANDOM() LIMIT :limit")
     List<QuestionEntity> getRandomByCategory(int catId, int limit);
 
+    @Query("SELECT * FROM questions WHERE categoryId = :catId")
+    List<QuestionEntity> getByCategory(int catId);
+
+    @Query("SELECT * FROM questions WHERE id = :id LIMIT 1")
+    QuestionEntity getById(int id);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(List<QuestionEntity> questions);
 

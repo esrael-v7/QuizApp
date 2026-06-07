@@ -4,6 +4,8 @@ import android.app.Application;
 import android.content.SharedPreferences;
 import androidx.appcompat.app.AppCompatDelegate;
 
+import com.example.quizapp.utils.TokenManager;
+
 public class QuizApplication extends Application {
     private static QuizApplication instance;
 
@@ -15,8 +17,13 @@ public class QuizApplication extends Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
+
+        // Initialize Singleton instances immediately
+        TokenManager.getInstance(this);
         
         // Restore dark mode preference
+
+
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
         boolean isDark = prefs.getBoolean("dark_mode", false);
         AppCompatDelegate.setDefaultNightMode(isDark

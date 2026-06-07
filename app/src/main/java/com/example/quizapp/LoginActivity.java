@@ -33,9 +33,10 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        tokenManager = new TokenManager(this);
+        tokenManager = TokenManager.getInstance(this);
         if (tokenManager.isLoggedIn()) {
-            if ("admin".equals(tokenManager.getRole())) {
+
+            if (tokenManager.getRole().equalsIgnoreCase("admin")) {
                 startActivity(new Intent(this, AdminActivity.class));
             } else {
                 startActivity(new Intent(this, MainActivity.class));
@@ -43,6 +44,7 @@ public class LoginActivity extends AppCompatActivity {
             finish();
             return;
         }
+
 
 
 
@@ -148,11 +150,18 @@ public class LoginActivity extends AppCompatActivity {
                         response.data.role,
                         response.data.username
                 );
-                startActivity(new Intent(this, MainActivity.class));
+                
+                if (response.data.role != null && response.data.role.equalsIgnoreCase("admin")) {
+                    startActivity(new Intent(this, AdminActivity.class));
+                } else {
+                    startActivity(new Intent(this, MainActivity.class));
+                }
+                
                 overridePendingTransition(R.anim.activity_fade_in, R.anim.activity_fade_out);
                 finish();
             }
         });
+
 
         viewModel.getError().observe(this, errorMessage -> {
             Snackbar.make(binding.getRoot(), errorMessage, Snackbar.LENGTH_LONG).show();

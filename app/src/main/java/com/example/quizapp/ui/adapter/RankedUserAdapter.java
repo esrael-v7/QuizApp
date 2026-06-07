@@ -23,7 +23,10 @@ public class RankedUserAdapter extends ListAdapter<LeaderboardEntry, RankedUserA
 
         @Override
         public boolean areContentsTheSame(@NonNull LeaderboardEntry oldItem, @NonNull LeaderboardEntry newItem) {
-            return oldItem.rank == newItem.rank && oldItem.score == newItem.score;
+            boolean rankSame = oldItem.rank == newItem.rank;
+            boolean scoreSame = (oldItem.score == null && newItem.score == null) || 
+                               (oldItem.score != null && oldItem.score.equals(newItem.score));
+            return rankSame && scoreSame;
         }
     };
 
@@ -49,18 +52,21 @@ public class RankedUserAdapter extends ListAdapter<LeaderboardEntry, RankedUserA
 
         public void bind(LeaderboardEntry entry) {
             binding.tvRank.setText(String.valueOf(entry.rank));
-            binding.tvName.setText(entry.full_name);
-            binding.tvCategory.setText(entry.best_category);
-            binding.tvPoints.setText(entry.score + " pts");
+            binding.tvName.setText(entry.full_name != null ? entry.full_name : "Unknown");
+            binding.tvCategory.setText(entry.best_category != null ? entry.best_category : "Top Player");
+            binding.tvPoints.setText((entry.score != null ? entry.score : "0") + " pts");
             
             // Avatar logic
             if (entry.full_name != null && !entry.full_name.isEmpty()) {
                 String[] parts = entry.full_name.split(" ");
                 String initials = "";
-                if (parts.length > 0) initials += parts[0].substring(0, 1).toUpperCase();
-                if (parts.length > 1) initials += parts[1].substring(0, 1).toUpperCase();
+                if (parts.length > 0 && !parts[0].isEmpty()) initials += parts[0].substring(0, 1).toUpperCase();
+                if (parts.length > 1 && !parts[1].isEmpty()) initials += parts[1].substring(0, 1).toUpperCase();
                 binding.tvInitials.setText(initials);
+            } else {
+                binding.tvInitials.setText("?");
             }
+
 
             int[] colors = {0xFF1565C0, 0xFF534AB7, 0xFFE65100, 0xFF0F6E56, 0xFF854F0B, 0xFF791F1F, 0xFF0F6E56, 0xFF37474F};
             int color = colors[entry.user_id % 8];

@@ -27,8 +27,18 @@ public class AdminQuestionAdapter extends ListAdapter<Question, AdminQuestionAda
 
             @Override
             public boolean areContentsTheSame(@NonNull Question oldItem, @NonNull Question newItem) {
-                return oldItem.question_text.equals(newItem.question_text);
+                return oldItem.id == newItem.id &&
+                       oldItem.category_id == newItem.category_id &&
+                       (oldItem.question_text != null && oldItem.question_text.equals(newItem.question_text)) &&
+                       (oldItem.correct_option != null && oldItem.correct_option.equals(newItem.correct_option)) &&
+                       (oldItem.option_a != null && oldItem.option_a.equals(newItem.option_a)) &&
+                       (oldItem.option_b != null && oldItem.option_b.equals(newItem.option_b)) &&
+                       (oldItem.option_c != null && oldItem.option_c.equals(newItem.option_c)) &&
+                       (oldItem.option_d != null && oldItem.option_d.equals(newItem.option_d)) &&
+                       (oldItem.explanation != null && oldItem.explanation.equals(newItem.explanation));
             }
+
+
         });
         this.listener = listener;
     }
@@ -54,9 +64,10 @@ public class AdminQuestionAdapter extends ListAdapter<Question, AdminQuestionAda
         }
 
         void bind(Question question) {
-            binding.tvQuestion.setText(question.question_text);
+            binding.tvQuestion.setText("#" + question.id + ": " + question.question_text);
             binding.tvCategory.setText("Category ID: " + question.category_id);
             binding.btnEdit.setOnClickListener(v -> listener.onEdit(question));
+
             binding.btnDelete.setOnClickListener(v -> listener.onDelete(question));
         }
     }

@@ -14,14 +14,19 @@ import java.util.concurrent.TimeUnit;
 
 public class RetrofitClient {
 
-    private static final String BASE_URL = "http://192.168.1.11:5000/api/";
+    private static final String BASE_URL = "http://192.168.1.10:5000/api/";
     private static ApiService apiService = null;
 
     public static ApiService getApi() {
         if (apiService == null) {
-            TokenManager tokenManager = new TokenManager(QuizApplication.getInstance());
+            QuizApplication app = QuizApplication.getInstance();
+            if (app == null) return null; // Safety check
+            
+            TokenManager tokenManager = TokenManager.getInstance(app);
+
 
             HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+
             logging.setLevel(HttpLoggingInterceptor.Level.BODY);
 
             Interceptor authInterceptor = new Interceptor() {
@@ -39,10 +44,12 @@ public class RetrofitClient {
                     }
 
                     String token = tokenManager.getAccessToken();
-                    if (token != null) {
+                    if (token != null && !token.isEmpty()) {
                         requestBuilder.header("Authorization", "Bearer " + token);
                     }
+                    
                     return chain.proceed(requestBuilder.build());
+
                 }
             };
 

@@ -76,8 +76,9 @@ public class LeaderboardPageFragment extends Fragment {
                 updateUI(response);
                 
                 // Highlight current user
-                int currentUserId = new TokenManager(requireContext()).getUserId();
+                int currentUserId = TokenManager.getInstance(requireContext()).getUserId();
                 boolean foundMe = false;
+
                 for (int i = 0; i < response.size(); i++) {
                     LeaderboardEntry entry = response.get(i);
                     if (entry.user_id == currentUserId) {
@@ -87,6 +88,7 @@ public class LeaderboardPageFragment extends Fragment {
                         foundMe = true;
                         break;
                     }
+
                 }
                 
                 // If not in the list, hide the highlight bar or show generic
@@ -111,6 +113,7 @@ public class LeaderboardPageFragment extends Fragment {
         
         if (data == null || data.isEmpty()) {
             adapter.submitList(new ArrayList<>());
+            binding.rvRankedList.setVisibility(View.GONE);
             return;
         }
 
@@ -143,8 +146,20 @@ public class LeaderboardPageFragment extends Fragment {
             }
         }
 
-        adapter.submitList(list);
+        // Fix: Always ensure the list is set even if only 1 item (Rank 4) exists
+        adapter.submitList(new ArrayList<>(list)); 
+        binding.rvRankedList.setVisibility(list.isEmpty() ? View.GONE : View.VISIBLE);
+        
+        // Force the parent to re-layout so the RecyclerView gets its correct size
+        binding.getRoot().post(() -> {
+            if (binding != null) {
+                binding.rvRankedList.requestLayout();
+            }
+        });
     }
+
+
+
 
     private void resetPodium() {
         binding.tvName1.setText("-"); binding.tvInitials1.setText(""); binding.tvScore1.setText("0 pts");

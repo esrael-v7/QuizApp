@@ -17,9 +17,21 @@ public class TokenManager {
     private static final String KEY_ROLE = "role";
     private static final String KEY_FULL_NAME = "full_name";
 
+    private static volatile TokenManager instance;
     private SharedPreferences sharedPreferences;
 
-    public TokenManager(Context context) {
+    public static TokenManager getInstance(Context context) {
+        if (instance == null) {
+            synchronized (TokenManager.class) {
+                if (instance == null) {
+                    instance = new TokenManager(context.getApplicationContext());
+                }
+            }
+        }
+        return instance;
+    }
+
+    private TokenManager(Context context) {
         try {
             MasterKey masterKey = new MasterKey.Builder(context)
                     .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
@@ -32,10 +44,14 @@ public class TokenManager {
                     EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
                     EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
             );
-        } catch (GeneralSecurityException | IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            // FALLBACK: If Encryption fails, use standard SharedPreferences so the app still works!
+            sharedPreferences = context.getSharedPreferences(PREF_NAME + "_backup", Context.MODE_PRIVATE);
         }
     }
+
+
+
 
     public void saveTokens(String access, String refresh, int userId, String role, String name) {
         if (sharedPreferences != null) {
@@ -45,9 +61,10 @@ public class TokenManager {
                     .putInt(KEY_USER_ID, userId)
                     .putString(KEY_ROLE, role)
                     .putString(KEY_FULL_NAME, name)
-                    .apply();
+                    .commit(); // Changed to commit() for instant save
         }
     }
+
 
     public String getAccessToken() {
         return sharedPreferences != null ? sharedPreferences.getString(KEY_ACCESS_TOKEN, null) : null;

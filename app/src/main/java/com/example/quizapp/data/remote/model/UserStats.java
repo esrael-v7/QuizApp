@@ -4,30 +4,31 @@ import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
 public class UserStats {
-    @SerializedName(value = "total_quizzes", alternate = {"totalQuizzes"})
+    @SerializedName("total_quizzes")
     public int total_quizzes;
     
-    @SerializedName(value = "avg_score", alternate = {"avgScore"})
+    @SerializedName("avg_score")
     public double avg_score;
     
-    @SerializedName(value = "current_streak", alternate = {"currentStreak"})
+    @SerializedName("current_streak")
     public int current_streak;
     
-    @SerializedName(value = "best_streak", alternate = {"bestStreak"})
+    @SerializedName("best_streak")
     public int best_streak;
     
-    @SerializedName(value = "total_points", alternate = {"totalPoints"})
+    @SerializedName("total_points")
     public int total_points;
     
-    @SerializedName(value = "scores_by_category", alternate = {"scoresByCategory"})
+    @SerializedName("scores_by_category")
     public List<CategoryScore> scores_by_category;
     
-    @SerializedName(value = "weak_areas", alternate = {"weakAreas"})
+    @SerializedName("weak_areas")
     public List<String> weak_areas;
 
-    @SerializedName(value = "user_level", alternate = {"level", "userLevel"})
+    @SerializedName("user_level")
     public int user_level;
 
-    @SerializedName(value = "last_synced_at", alternate = {"lastSyncedAt"})
+    @SerializedName("last_synced_at")
     public String last_synced_at;
+
 }

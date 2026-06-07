@@ -7,8 +7,8 @@
         <item name="android:windowBackground">@color/colorBackground</item>
         <item name="android:textColorPrimary">@color/colorPrimaryText</item>
         <item name="android:textColorSecondary">@color/colorSecondaryText</item>
-        <item name="android:windowAnimationStyle">@null</item>
     </style>
+
 
     <style name="Theme.QuizApp" parent="Base.Theme.QuizApp" />
 

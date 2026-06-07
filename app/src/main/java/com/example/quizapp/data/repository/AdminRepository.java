@@ -14,9 +14,10 @@ public class AdminRepository {
         this.apiService = RetrofitClient.getApi();
     }
 
-    public Call<GenericResponse<List<Question>>> getAllQuestions(int page) {
-        return apiService.getAllQuestions(page);
+    public Call<GenericResponse<List<Question>>> getAllQuestions(int page, Integer limit, Integer categoryId, String search) {
+        return apiService.getAllQuestions(page, limit, categoryId, search);
     }
+
 
     public Call<GenericResponse<Question>> addQuestion(Question question) {
         return apiService.addQuestion(question);

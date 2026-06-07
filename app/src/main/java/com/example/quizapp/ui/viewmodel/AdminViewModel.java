@@ -25,9 +25,16 @@ public class AdminViewModel extends ViewModel {
     public LiveData<String> getError() { return error; }
     public LiveData<Boolean> isLoading() { return loading; }
 
-    public void fetchQuestions(int page) {
+    private Integer currentCategoryId = null;
+    private String currentSearch = null;
+
+    public void fetchQuestions(int page, Integer categoryId, String search) {
+        this.currentCategoryId = categoryId;
+        this.currentSearch = search;
         loading.setValue(true);
-        repository.getAllQuestions(page).enqueue(new Callback<GenericResponse<List<Question>>>() {
+        repository.getAllQuestions(page, 500, categoryId, search).enqueue(new Callback<GenericResponse<List<Question>>>() {
+
+
             @Override
             public void onResponse(Call<GenericResponse<List<Question>>> call, Response<GenericResponse<List<Question>>> response) {
                 loading.setValue(false);
@@ -38,7 +45,6 @@ public class AdminViewModel extends ViewModel {
                     error.setValue("Error " + response.code() + " at: " + url);
                 }
             }
-
 
             @Override
             public void onFailure(Call<GenericResponse<List<Question>>> call, Throwable t) {
@@ -54,7 +60,7 @@ public class AdminViewModel extends ViewModel {
             @Override
             public void onResponse(Call<GenericResponse<Void>> call, Response<GenericResponse<Void>> response) {
                 if (response.isSuccessful()) {
-                    fetchQuestions(1); // Refresh
+                    fetchQuestions(1, currentCategoryId, currentSearch); // Refresh with current filters
                 } else {
                     error.setValue("Failed to delete");
                 }
@@ -74,16 +80,25 @@ public class AdminViewModel extends ViewModel {
             public void onResponse(Call<GenericResponse<Question>> call, Response<GenericResponse<Question>> response) {
                 loading.setValue(false);
                 if (response.isSuccessful()) {
-                    fetchQuestions(1);
+                    fetchQuestions(1, currentCategoryId, currentSearch);
                 } else {
-                    error.setValue("Failed to add question");
+                    try {
+                        if (response.errorBody() != null) {
+                            String errorBody = response.errorBody().string();
+                            error.setValue("Error " + response.code() + ": " + errorBody);
+                        } else {
+                            error.setValue("Error " + response.code() + ": Failed to add question");
+                        }
+                    } catch (Exception e) {
+                        error.setValue("Error " + response.code() + ": Failed to add question");
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call<GenericResponse<Question>> call, Throwable t) {
                 loading.setValue(false);
-                error.setValue("Connection failed");
+                error.setValue("Connection failed: " + t.getMessage());
             }
         });
     }
@@ -95,18 +110,29 @@ public class AdminViewModel extends ViewModel {
             public void onResponse(Call<GenericResponse<Question>> call, Response<GenericResponse<Question>> response) {
                 loading.setValue(false);
                 if (response.isSuccessful()) {
-                    fetchQuestions(1);
+                    fetchQuestions(1, currentCategoryId, currentSearch);
                 } else {
-                    error.setValue("Failed to update question");
+                    try {
+                        if (response.errorBody() != null) {
+                            String errorBody = response.errorBody().string();
+                            error.setValue("Error " + response.code() + ": " + errorBody);
+                        } else {
+                            error.setValue("Error " + response.code() + ": Failed to update question");
+                        }
+                    } catch (Exception e) {
+                        error.setValue("Error " + response.code() + ": Failed to update question");
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call<GenericResponse<Question>> call, Throwable t) {
                 loading.setValue(false);
-                error.setValue("Connection failed");
+                error.setValue("Connection failed: " + t.getMessage());
             }
         });
     }
+
+
 }
 

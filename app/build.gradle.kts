@@ -74,7 +74,12 @@ dependencies {
     // Google Auth
     implementation(libs.play.services.auth)
 
+    // SQLCipher for encrypted Room DB
+    implementation(libs.sqlcipher)
+    implementation(libs.sqlite)
+
     testImplementation(libs.junit)
+
 
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

@@ -66,17 +66,23 @@ public class AddEditQuestionDialogFragment extends DialogFragment {
         binding.btnSave.setOnClickListener(v -> {
             if (validate()) {
                 Question q = existingQuestion != null ? existingQuestion : new Question();
+                if (existingQuestion == null) q.id = 0; // Explicitly 0 for new
                 q.question_text = binding.etQuestionText.getText().toString().trim();
+
                 q.category_id = Integer.parseInt(binding.etCategoryId.getText().toString().trim());
                 q.option_a = binding.etOptionA.getText().toString().trim();
                 q.option_b = binding.etOptionB.getText().toString().trim();
                 q.option_c = binding.etOptionC.getText().toString().trim();
                 q.option_d = binding.etOptionD.getText().toString().trim();
-                q.correct_option = binding.actvCorrectOption.getText().toString();
+                // Use UPPERCASE to satisfy database check constraints
+                q.correct_option = binding.actvCorrectOption.getText().toString().toUpperCase().trim();
                 q.explanation = binding.etExplanation.getText().toString().trim();
-                q.difficulty = "medium"; // default
+
+
+                q.difficulty = "Medium"; // capitalized default
 
                 if (listener != null) {
+
                     listener.onSave(q);
                 }
                 dismiss();
@@ -92,12 +98,49 @@ public class AddEditQuestionDialogFragment extends DialogFragment {
 
 
     private boolean validate() {
-        if (binding.etQuestionText.getText().toString().isEmpty()) return false;
-        if (binding.etCategoryId.getText().toString().isEmpty()) return false;
-        if (binding.etOptionA.getText().toString().isEmpty()) return false;
-        if (binding.etOptionB.getText().toString().isEmpty()) return false;
+        if (binding.etQuestionText.getText().toString().trim().isEmpty()) {
+            binding.etQuestionText.setError("Required");
+            return false;
+        }
+        String catIdStr = binding.etCategoryId.getText().toString().trim();
+        if (catIdStr.isEmpty()) {
+            binding.etCategoryId.setError("Required");
+            return false;
+        }
+        try {
+            Integer.parseInt(catIdStr);
+        } catch (NumberFormatException e) {
+            binding.etCategoryId.setError("Must be a number");
+            return false;
+        }
+        if (binding.etOptionA.getText().toString().trim().isEmpty()) {
+            binding.etOptionA.setError("Required");
+            return false;
+        }
+        if (binding.etOptionB.getText().toString().trim().isEmpty()) {
+            binding.etOptionB.setError("Required");
+            return false;
+        }
+        if (binding.etOptionC.getText().toString().trim().isEmpty()) {
+            binding.etOptionC.setError("Required");
+            return false;
+        }
+        if (binding.etOptionD.getText().toString().trim().isEmpty()) {
+            binding.etOptionD.setError("Required");
+            return false;
+        }
+        if (binding.actvCorrectOption.getText().toString().trim().isEmpty()) {
+            binding.actvCorrectOption.setError("Required");
+            return false;
+        }
+        if (binding.etExplanation.getText().toString().trim().isEmpty()) {
+            binding.etExplanation.setError("Required");
+            return false;
+        }
         return true;
     }
+
+
 
     @Override
     public void onDestroyView() {

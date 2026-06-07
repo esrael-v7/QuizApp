@@ -52,10 +52,11 @@ public class ProfileFragment extends Fragment {
 
         super.onViewCreated(view, savedInstanceState);
 
-        tokenManager = new TokenManager(requireContext());
+        tokenManager = TokenManager.getInstance(requireContext());
 
         settingsPrefs = requireContext()
                 .getSharedPreferences("settings", Context.MODE_PRIVATE);
+
 
         progressViewModel = new ViewModelProvider(requireActivity())
                 .get(ProgressViewModel.class);
@@ -75,7 +76,14 @@ public class ProfileFragment extends Fragment {
 
         observeStats();
 
+        progressViewModel.getError().observe(getViewLifecycleOwner(), error -> {
+            if (error != null && !error.isEmpty()) {
+                com.google.android.material.snackbar.Snackbar.make(binding.getRoot(), error, com.google.android.material.snackbar.Snackbar.LENGTH_LONG).show();
+            }
+        });
+
         binding.btnSignOut.setOnClickListener(v -> showSignOutDialog());
+
 
         progressViewModel.fetchStats();
     }
@@ -183,43 +191,39 @@ public class ProfileFragment extends Fragment {
     }
 
     private void setupDataSync() {
-
-        boolean isSyncEnabled =
-                settingsPrefs.getBoolean("cloud_sync", true);
-
+        boolean isSyncEnabled = settingsPrefs.getBoolean("cloud_sync", true);
         binding.switchCloudSync.setChecked(isSyncEnabled);
-
         updateSyncStatusText(isSyncEnabled);
 
-        binding.switchCloudSync.setOnCheckedChangeListener(
-                (buttonView, isChecked) -> {
+        binding.switchCloudSync.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked && !tokenManager.isLoggedIn()) {
+                buttonView.setChecked(false);
+                showLoginRequiredDialog();
+                return;
+            }
 
-                    if (isChecked && !tokenManager.isLoggedIn()) {
-                        buttonView.setChecked(false);
-                        showLoginRequiredDialog();
-                        return;
-                    }
+            settingsPrefs.edit()
+                    .putBoolean("cloud_sync", isChecked)
+                    .apply();
 
-                    settingsPrefs.edit()
-                            .putBoolean("cloud_sync", isChecked)
-                            .apply();
+            updateSyncStatusText(isChecked);
 
-                    updateSyncStatusText(isChecked);
+            if (isChecked && tokenManager.isLoggedIn()) {
+                progressViewModel.syncData();
+            }
 
-                    if (isChecked && tokenManager.isLoggedIn()) {
-                        progressViewModel.syncData();
-                    }
-
-                    if (getActivity() instanceof MainActivity) {
-                        ((MainActivity) getActivity()).updateSyncStatusIndicator();
-                    }
-                }
-        );
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).updateSyncStatusIndicator();
+            }
+        });
 
         binding.layoutSyncInfo.setOnClickListener(v -> {
-
             if (binding.switchCloudSync.isChecked()) {
                 if (tokenManager.isLoggedIn()) {
+                    if (!com.example.quizapp.utils.NetworkUtils.isNetworkAvailable(requireContext())) {
+                        com.google.android.material.snackbar.Snackbar.make(binding.getRoot(), "No internet connection.", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show();
+                        return;
+                    }
                     progressViewModel.syncData();
                 } else {
                     showLoginRequiredDialog();
@@ -245,9 +249,10 @@ public class ProfileFragment extends Fragment {
 
         binding.tvSyncStatus.setText(
                 isEnabled
-                        ? "Notes sync to cloud when online"
+                        ? "Quiz data syncs to cloud when online"
                         : "Data saved locally only"
         );
+
 
         if (!tokenManager.isLoggedIn()) {
             binding.tvLastSyncInfo.setText(

@@ -12,11 +12,14 @@ public class LeaderboardEntry {
     @SerializedName(value = "full_name", alternate = {"fullName", "username"})
     public String full_name;
     
-    @SerializedName(value = "score", alternate = {"points", "total_points"})
-    public String score; // String because server sends "90" in quotes
+    @SerializedName(value = "score", alternate = {"points", "total_points", "totalPoints"})
+    public String score; 
     
-    @SerializedName(value = "best_category", alternate = {"bestCategory"})
+    @SerializedName(value = "best_category", alternate = {"bestCategory", "top_category"})
     public String best_category;
+
+
+
     
     @SerializedName("avatar_initials")
     public String avatar_initials;

@@ -69,7 +69,7 @@ public class QuizActivity extends AppCompatActivity {
             }
         } else {
             // Normal mode: fetch from server
-            viewModel.fetchQuestions(categoryId);
+            viewModel.loadQuestions(categoryId);
         }
 
         binding.toolbar.inflateMenu(R.menu.quiz_menu);

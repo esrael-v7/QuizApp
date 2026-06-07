@@ -45,15 +45,18 @@ public class ResultsActivity extends AppCompatActivity {
 
         // Auto-submit if not in practice mode
         if (answersJson != null && !isPractice) {
-            try {
-                List<AnswerRecord> answers = new Gson().fromJson(answersJson, new TypeToken<List<AnswerRecord>>(){}.getType());
-                SubmitResultRequest request = new SubmitResultRequest(categoryId, total, correct, timeTaken, answers);
-                viewModel.submitResult(request);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            new Thread(() -> {
+                try {
+                    List<AnswerRecord> answers = new Gson().fromJson(answersJson, new TypeToken<List<AnswerRecord>>(){}.getType());
+                    SubmitResultRequest request = new SubmitResultRequest(categoryId, total, correct, timeTaken, answers);
+                    runOnUiThread(() -> viewModel.submitResult(request));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }).start();
         }
     }
+
 
     private void displayResults(int correct, int total, String categoryName, int timeTaken, double scorePercent, int points, boolean passed) {
         binding.tvScorePercent.setText(String.format(Locale.getDefault(), "%.0f%%", scorePercent));

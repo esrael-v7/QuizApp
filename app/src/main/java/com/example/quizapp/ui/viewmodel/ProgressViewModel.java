@@ -25,7 +25,7 @@ import retrofit2.Response;
 public class ProgressViewModel extends AndroidViewModel {
     private UserRepository userRepository;
     private QuizRepository quizRepository;
-    private MutableLiveData<UserStats> stats = new MutableLiveData<>();
+    private LiveData<UserStats> stats;
     private MutableLiveData<String> error = new MutableLiveData<>();
     private MutableLiveData<Boolean> loading = new MutableLiveData<>();
 
@@ -33,6 +33,7 @@ public class ProgressViewModel extends AndroidViewModel {
         super(application);
         this.userRepository = new UserRepository(application);
         this.quizRepository = new QuizRepository(application);
+        this.stats = userRepository.getUserStatsLocal();
     }
 
     public LiveData<UserStats> getStats() { return stats; }
@@ -40,6 +41,10 @@ public class ProgressViewModel extends AndroidViewModel {
     public LiveData<Boolean> isLoading() { return loading; }
 
     public void syncData() {
+        if (!com.example.quizapp.utils.NetworkUtils.isNetworkAvailable(getApplication())) {
+            // No internet, fail silently without setting error if it's an auto-sync
+            return;
+        }
         loading.setValue(true);
         userRepository.syncData().enqueue(new Callback<GenericResponse<Void>>() {
             @Override
@@ -48,81 +53,92 @@ public class ProgressViewModel extends AndroidViewModel {
                     fetchStats(); // Refresh stats after sync
                 } else {
                     loading.setValue(false);
-                    error.setValue("Sync failed");
+                    error.setValue("Sync failed: " + response.code() + " " + response.message());
                 }
             }
 
             @Override
             public void onFailure(Call<GenericResponse<Void>> call, Throwable t) {
                 loading.setValue(false);
-                error.setValue("Sync failed: network error");
+                error.setValue("Sync failed: network error (" + t.getMessage() + ")");
             }
         });
     }
 
+
+    private long lastFetchTime = 0;
+
     public void fetchStats() {
-        if (stats.getValue() != null && stats.getValue().total_quizzes > 0) {
+        // Prevent spamming requests (Rate limit 429 prevention)
+        if (System.currentTimeMillis() - lastFetchTime < 30000 && stats.getValue() != null) {
             return;
         }
-        loading.setValue(true);
-        // 1. Fetch Categories
 
-        quizRepository.getCategories().enqueue(new Callback<GenericResponse<List<Category>>>() {
+        if (!com.example.quizapp.utils.NetworkUtils.isNetworkAvailable(getApplication())) {
+            return;
+        }
+
+        if (stats.getValue() == null) {
+            loading.setValue(true);
+        }
+        
+        lastFetchTime = System.currentTimeMillis();
+        // 1. Fetch Categories
+        quizRepository.getCategoriesRemote().enqueue(new Callback<GenericResponse<List<Category>>>() {
+
             @Override
             public void onResponse(Call<GenericResponse<List<Category>>> call, Response<GenericResponse<List<Category>>> catResponse) {
                 if (catResponse.isSuccessful() && catResponse.body() != null) {
                     List<Category> allCategories = catResponse.body().data;
+                    quizRepository.saveCategoriesLocal(allCategories);
                     
                     // 2. Fetch User Stats
-                    userRepository.getUserStats().enqueue(new Callback<GenericResponse<UserStats>>() {
+                    userRepository.getUserStatsRemote().enqueue(new Callback<GenericResponse<UserStats>>() {
                         @Override
                         public void onResponse(Call<GenericResponse<UserStats>> call, Response<GenericResponse<UserStats>> response) {
                             loading.setValue(false);
-                            UserStats userStats;
                             if (response.isSuccessful() && response.body() != null && response.body().data != null) {
-                                userStats = response.body().data;
-                            } else if (response.code() == 404 || response.code() == 204) {
-                                userStats = new UserStats();
-                            } else {
-                                error.setValue("Failed to load stats");
-                                return;
+                                UserStats userStats = response.body().data;
+                                // Merge categories
+                                mergeCategoriesWithStats(userStats, allCategories);
+                                
+                                // Identify weak areas if server didn't provide them
+                                if (userStats.weak_areas == null || userStats.weak_areas.isEmpty()) {
+                                    identifyWeakAreas(userStats);
+                                }
+                                
+                                // Save locally
+                                userRepository.saveUserStatsLocal(userStats);
+                            } else if (response.code() == 429) {
+                                error.setValue("Too many requests. Please wait.");
+                            } else if (response.code() != 404 && response.code() != 204) {
+                                error.setValue("Failed to load stats: " + response.code());
                             }
-                            
-                            // 3. Merge: Ensure all categories from Home screen are shown here with scores
-                            mergeCategoriesWithStats(userStats, allCategories);
-                            
-                            // 4. Fallback calculation: If stats are zero but categories have scores, calculate locally
-                            if (userStats.total_quizzes == 0 && !userStats.scores_by_category.isEmpty()) {
-                                calculateLocalStats(userStats);
-                            }
-                            
-                            // 5. Weak Areas fallback: If null, identify categories with < 60% score
-                            if (userStats.weak_areas == null || userStats.weak_areas.isEmpty()) {
-                                identifyWeakAreas(userStats);
-                            }
-                            
-                            stats.setValue(userStats);
                         }
+
+
 
                         @Override
                         public void onFailure(Call<GenericResponse<UserStats>> call, Throwable t) {
                             loading.setValue(false);
-                            error.setValue("Connection failed");
+                            error.setValue("Connection failed: " + t.getMessage());
                         }
                     });
                 } else {
                     loading.setValue(false);
-                    error.setValue("Failed to sync categories");
+                    error.setValue("Failed to sync categories: " + catResponse.code());
                 }
             }
 
             @Override
             public void onFailure(Call<GenericResponse<List<Category>>> call, Throwable t) {
                 loading.setValue(false);
-                error.setValue("Connection failed");
+                error.setValue("Connection failed: " + t.getMessage());
             }
         });
     }
+
+
 
     private void calculateLocalStats(UserStats stats) {
         int totalPlayed = 0;
@@ -148,13 +164,16 @@ public class ProgressViewModel extends AndroidViewModel {
         List<String> weak = new ArrayList<>();
         if (stats.scores_by_category != null) {
             for (CategoryScore cs : stats.scores_by_category) {
-                if (cs.score > 0 && cs.score < 60) {
+                // If they have played it (score > 0) and scored less than 70%
+                // OR if it's 0 but they have played other categories (meaning they might be avoiding it)
+                if (cs.score < 70) {
                     weak.add(cs.category_name);
                 }
             }
         }
         stats.weak_areas = weak;
     }
+
 
     private void mergeCategoriesWithStats(UserStats stats, List<Category> allCategories) {
         if (allCategories == null) return;

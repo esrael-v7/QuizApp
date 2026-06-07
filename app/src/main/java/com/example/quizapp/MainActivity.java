@@ -28,8 +28,9 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        tokenManager = new TokenManager(this);
+        tokenManager = TokenManager.getInstance(this);
         settingsPrefs = getSharedPreferences("settings", Context.MODE_PRIVATE);
+
 
         updateSyncStatusIndicator();
 
@@ -77,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void updateSyncStatusIndicator() {
+        if (binding == null) return;
         boolean isSyncEnabled = settingsPrefs.getBoolean("cloud_sync", true);
         boolean isLoggedIn = tokenManager.isLoggedIn();
 
@@ -89,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
 
     @Override
     protected void onResume() {

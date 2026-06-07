@@ -23,8 +23,9 @@ public class RegisterActivity extends AppCompatActivity {
         binding = ActivityRegisterBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        tokenManager = new TokenManager(this);
+        tokenManager = TokenManager.getInstance(this);
         viewModel = new ViewModelProvider(this).get(RegisterViewModel.class);
+
 
         setupListeners();
         observeViewModel();

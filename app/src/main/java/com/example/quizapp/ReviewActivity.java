@@ -37,17 +37,31 @@ public class ReviewActivity extends AppCompatActivity {
                 return;
             }
 
-            List<Question> questions = new Gson().fromJson(questionsJson, new TypeToken<List<Question>>(){}.getType());
-            List<AnswerRecord> answers = new Gson().fromJson(answersJson, new TypeToken<List<AnswerRecord>>(){}.getType());
+            // Show a progress indicator while parsing
+            binding.progressBar.setVisibility(android.view.View.VISIBLE);
 
-            if (questions == null || questions.isEmpty() || answers == null) {
-                binding.tvEmpty.setVisibility(android.view.View.VISIBLE);
-                binding.rvReview.setVisibility(android.view.View.GONE);
-            } else {
-                binding.tvEmpty.setVisibility(android.view.View.GONE);
-                binding.rvReview.setVisibility(android.view.View.VISIBLE);
-                setupRecyclerView(questions, answers);
-            }
+            new Thread(() -> {
+                try {
+                    List<Question> questions = new Gson().fromJson(questionsJson, new TypeToken<List<Question>>(){}.getType());
+                    List<AnswerRecord> answers = new Gson().fromJson(answersJson, new TypeToken<List<AnswerRecord>>(){}.getType());
+
+                    runOnUiThread(() -> {
+                        binding.progressBar.setVisibility(android.view.View.GONE);
+                        if (questions == null || questions.isEmpty() || answers == null) {
+                            binding.tvEmpty.setVisibility(android.view.View.VISIBLE);
+                            binding.rvReview.setVisibility(android.view.View.GONE);
+                        } else {
+                            binding.tvEmpty.setVisibility(android.view.View.GONE);
+                            binding.rvReview.setVisibility(android.view.View.VISIBLE);
+                            setupRecyclerView(questions, answers);
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    runOnUiThread(this::showErrorAndExit);
+                }
+            }).start();
+
         } catch (Exception e) {
             e.printStackTrace();
             showErrorAndExit();

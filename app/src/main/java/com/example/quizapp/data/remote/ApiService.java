@@ -79,7 +79,13 @@ public interface ApiService {
 
     // -- ADMIN --
     @GET("admin/questions")
-    Call<GenericResponse<List<Question>>> getAllQuestions(@Query("page") int page);
+    Call<GenericResponse<List<Question>>> getAllQuestions(
+            @Query("page") int page,
+            @Query("limit") Integer limit,
+            @Query("categoryId") Integer categoryId,
+            @Query("search") String search
+    );
+
 
     @POST("admin/questions")
     Call<GenericResponse<Question>> addQuestion(@Body Question question);

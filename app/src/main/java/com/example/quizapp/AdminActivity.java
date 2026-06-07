@@ -25,7 +25,6 @@ public class AdminActivity extends AppCompatActivity {
     private AdminViewModel viewModel;
     private AdminQuestionAdapter adapter;
     private TokenManager tokenManager;
-    private int currentPage = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,8 +32,28 @@ public class AdminActivity extends AppCompatActivity {
         binding = ActivityAdminBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        tokenManager = new TokenManager(this);
+        tokenManager = TokenManager.getInstance(this);
+        
+        // Debug check
+        String currentRole = tokenManager.getRole();
+        
+        if (!tokenManager.isLoggedIn()) {
+            startActivity(new Intent(this, AdminLoginActivity.class));
+            finish();
+            return;
+        }
+
+        if (currentRole == null || !currentRole.equalsIgnoreCase("admin")) {
+            Toast.makeText(this, "Security Check: Access Denied. Role is: " + currentRole, Toast.LENGTH_LONG).show();
+            startActivity(new Intent(this, AdminLoginActivity.class));
+            finish();
+            return;
+        }
+
         viewModel = new ViewModelProvider(this).get(AdminViewModel.class);
+
+
+
 
         setupToolbar();
         setupRecyclerView();
@@ -44,19 +63,24 @@ public class AdminActivity extends AppCompatActivity {
             showAddEditDialog(null);
         });
 
-        binding.btnNext.setOnClickListener(v -> {
+        binding.swipeRefresh.setOnRefreshListener(() -> fetchQuestions());
 
-            fetchQuestions(currentPage + 1);
+        binding.btnApplyFilter.setOnClickListener(v -> {
+            fetchQuestions();
         });
 
-        binding.btnPrev.setOnClickListener(v -> {
-            if (currentPage > 1) {
-                fetchQuestions(currentPage - 1);
-            }
+        binding.btnClearFilter.setOnClickListener(v -> {
+            binding.etSearch.setText("");
+            binding.etFilterCategory.setText("");
+            fetchQuestions();
         });
 
-        fetchQuestions(currentPage);
+
+        fetchQuestions();
     }
+
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -93,10 +117,22 @@ public class AdminActivity extends AppCompatActivity {
 
 
 
-    private void fetchQuestions(int page) {
-        currentPage = page;
-        viewModel.fetchQuestions(page);
+    private void fetchQuestions() {
+        if (binding == null) return;
+        String search = binding.etSearch.getText() != null ? binding.etSearch.getText().toString().trim() : "";
+        String catIdStr = binding.etFilterCategory.getText() != null ? binding.etFilterCategory.getText().toString().trim() : "";
+        Integer categoryId = null;
+        if (!catIdStr.isEmpty()) {
+            try {
+                categoryId = Integer.parseInt(catIdStr);
+            } catch (NumberFormatException ignored) {}
+        }
+        viewModel.fetchQuestions(1, categoryId, search.isEmpty() ? null : search);
     }
+
+
+
+
 
 
     private void setupToolbar() {
@@ -112,14 +148,28 @@ public class AdminActivity extends AppCompatActivity {
         adapter = new AdminQuestionAdapter(new AdminQuestionAdapter.OnQuestionActionListener() {
             @Override
             public void onEdit(Question question) {
+                if (question.id == 0) {
+                    Toast.makeText(AdminActivity.this, "Error: Question ID is 0, cannot edit.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 showAddEditDialog(question);
             }
 
             @Override
             public void onDelete(Question question) {
-                viewModel.deleteQuestion(question.id);
+                if (question.id == 0) {
+                    Toast.makeText(AdminActivity.this, "Error: Question ID is 0, cannot delete.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                new AlertDialog.Builder(AdminActivity.this)
+                        .setTitle("Delete Question")
+                        .setMessage("Are you sure you want to delete question #" + question.id + "?")
+                        .setPositiveButton("Delete", (d, w) -> viewModel.deleteQuestion(question.id))
+                        .setNegativeButton("Cancel", null)
+                        .show();
             }
         });
+
         binding.rvQuestions.setLayoutManager(new LinearLayoutManager(this));
         binding.rvQuestions.setAdapter(adapter);
     }
@@ -139,23 +189,36 @@ public class AdminActivity extends AppCompatActivity {
 
     private void observeViewModel() {
         viewModel.getQuestions().observe(this, questions -> {
+            if (binding == null) return;
+            binding.swipeRefresh.setRefreshing(false);
             if (questions == null || questions.isEmpty()) {
-                Toast.makeText(this, "No questions found in backend", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "No questions found matching criteria", Toast.LENGTH_LONG).show();
+                binding.tvQuestionCount.setText("No questions found");
+            } else {
+                binding.tvQuestionCount.setText("Showing " + questions.size() + " questions");
             }
             adapter.submitList(questions);
         });
 
 
+
+
+
         viewModel.getError().observe(this, error -> {
-            Snackbar.make(binding.getRoot(), error, Snackbar.LENGTH_INDEFINITE)
-                    .setAction("Retry", v -> fetchQuestions(currentPage))
+            new AlertDialog.Builder(this)
+                    .setTitle("Error")
+                    .setMessage(error)
+                    .setPositiveButton("OK", null)
                     .show();
         });
 
 
+
         viewModel.isLoading().observe(this, isLoading -> {
+            if (binding == null) return;
             binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
         });
+
     }
 }
 
