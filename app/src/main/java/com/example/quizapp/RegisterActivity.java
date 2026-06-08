@@ -71,6 +71,7 @@ public class RegisterActivity extends AppCompatActivity {
     private void observeViewModel() {
         viewModel.getRegisterResult().observe(this, response -> {
             if (response != null && response.data != null) {
+                android.widget.Toast.makeText(this, "Account created successfully! Welcome " + response.data.username, android.widget.Toast.LENGTH_LONG).show();
                 tokenManager.saveTokens(
                         response.data.token,
                         null,

@@ -95,5 +95,8 @@ public interface ApiService {
 
     @DELETE("admin/questions/{id}")
     Call<GenericResponse<Void>> deleteQuestion(@Path("id") int id);
+
+    @DELETE("user/account")
+    Call<GenericResponse<Void>> deleteAccount();
 }
 

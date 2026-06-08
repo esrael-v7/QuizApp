@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 public class RetrofitClient {
 
-    private static final String BASE_URL = "http://192.168.1.10:5000/api/";
+    private static final String BASE_URL = "http://172.16.0.166:5000/api/";
     private static ApiService apiService = null;
 
     public static ApiService getApi() {
@@ -33,12 +33,9 @@ public class RetrofitClient {
                 @Override
                 public Response intercept(Chain chain) throws IOException {
                     Request original = chain.request();
+                    Request.Builder requestBuilder = original.newBuilder();
                     
-                    // Add bypass header for localtunnel to avoid the warning screen
-                    Request.Builder requestBuilder = original.newBuilder()
-                            .header("Bypass-Tunnel-Reminder", "true");
-                    
-                    // Don't add token for auth routes
+                    // Public authentication endpoints do not require a token header
                     if (original.url().encodedPath().contains("/auth/")) {
                         return chain.proceed(requestBuilder.build());
                     }
@@ -49,7 +46,6 @@ public class RetrofitClient {
                     }
                     
                     return chain.proceed(requestBuilder.build());
-
                 }
             };
 

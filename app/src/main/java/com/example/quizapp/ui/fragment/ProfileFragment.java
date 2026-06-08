@@ -84,8 +84,55 @@ public class ProfileFragment extends Fragment {
 
         binding.btnSignOut.setOnClickListener(v -> showSignOutDialog());
 
+        binding.btnDeleteAccount.setOnClickListener(v -> showDeleteAccountDialog());
 
         progressViewModel.fetchStats();
+    }
+
+    private void showDeleteAccountDialog() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Delete Account?")
+                .setMessage("This will permanently delete your account, your quiz history, and all earned points. This action cannot be undone.")
+                .setPositiveButton("DELETE", (dialog, which) -> deleteAccount())
+                .setNegativeButton("Cancel", null)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+    }
+
+    private void deleteAccount() {
+        if (!com.example.quizapp.utils.NetworkUtils.isNetworkAvailable(requireContext())) {
+            com.google.android.material.snackbar.Snackbar.make(binding.getRoot(), "Internet required to delete account.", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show();
+            return;
+        }
+
+        progressViewModel.deleteAccount(new retrofit2.Callback<com.example.quizapp.data.remote.model.GenericResponse<Void>>() {
+            @Override
+            public void onResponse(retrofit2.Call<com.example.quizapp.data.remote.model.GenericResponse<Void>> call, retrofit2.Response<com.example.quizapp.data.remote.model.GenericResponse<Void>> response) {
+                if (response.isSuccessful()) {
+                    com.google.android.material.snackbar.Snackbar.make(binding.getRoot(), "Account deleted successfully.", com.google.android.material.snackbar.Snackbar.LENGTH_LONG).show();
+                    signOut();
+                } else {
+                    String errorMessage = "Failed to delete account.";
+                    try {
+                        if (response.errorBody() != null) {
+                            String errorJson = response.errorBody().string();
+                            com.google.gson.JsonObject jsonObject = new com.google.gson.Gson().fromJson(errorJson, com.google.gson.JsonObject.class);
+                            if (jsonObject.has("message")) {
+                                errorMessage = jsonObject.get("message").getAsString();
+                            }
+                        }
+                    } catch (Exception e) {
+                        errorMessage = "Error " + response.code() + ": Failed to delete account.";
+                    }
+                    com.google.android.material.snackbar.Snackbar.make(binding.getRoot(), errorMessage, com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(retrofit2.Call<com.example.quizapp.data.remote.model.GenericResponse<Void>> call, Throwable t) {
+                com.google.android.material.snackbar.Snackbar.make(binding.getRoot(), "Network error. Try again later.", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void observeStats() {

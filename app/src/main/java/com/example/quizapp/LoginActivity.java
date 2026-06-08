@@ -143,6 +143,7 @@ public class LoginActivity extends AppCompatActivity {
 
         viewModel.getLoginResult().observe(this, response -> {
             if (response != null && response.data != null) {
+                android.widget.Toast.makeText(this, "Login successful! Welcome " + response.data.username, android.widget.Toast.LENGTH_SHORT).show();
                 tokenManager.saveTokens(
                         response.data.token,
                         null,

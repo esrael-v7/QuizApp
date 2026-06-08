@@ -196,4 +196,8 @@ public class ProgressViewModel extends AndroidViewModel {
         }
         stats.scores_by_category = mergedList;
     }
+
+    public void deleteAccount(Callback<GenericResponse<Void>> callback) {
+        userRepository.deleteAccount().enqueue(callback);
+    }
 }

@@ -25,7 +25,7 @@ public class UserStats {
     @SerializedName("weak_areas")
     public List<String> weak_areas;
 
-    @SerializedName("user_level")
+    @SerializedName("level")
     public int user_level;
 
     @SerializedName("last_synced_at")

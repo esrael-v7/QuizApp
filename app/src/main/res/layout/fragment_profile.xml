@@ -329,8 +329,22 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:text="SIGN OUT"
-                android:textColor="@color/colorError"
-                android:textStyle="bold" />
+                android:textColor="#2196F3"
+                android:textStyle="bold"
+                app:rippleColor="#202196F3" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDeleteAccount"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="32dp"
+                android:text="DELETE ACCOUNT"
+                android:textColor="#F44336"
+                android:textStyle="bold"
+                android:textSize="12sp"
+                app:rippleColor="#20F44336" />
 
         </LinearLayout>
     </LinearLayout>

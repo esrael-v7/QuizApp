@@ -115,4 +115,8 @@ public class UserRepository {
     public Call<GenericResponse<Void>> syncData() {
         return apiService.syncData();
     }
+
+    public Call<GenericResponse<Void>> deleteAccount() {
+        return apiService.deleteAccount();
+    }
 }
